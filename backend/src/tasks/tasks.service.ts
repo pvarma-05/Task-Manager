@@ -2,71 +2,58 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Task } from './schemas/task.schema';
 import * as mongoose from 'mongoose';
-
-import { Query } from 'express-serve-static-core'
+import { Model } from 'mongoose';
+import { createTaskDto } from './dto/create-task.dto';
+import { updateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksService {
-    constructor(
-        @InjectModel(Task.name)
-        private taskModel : mongoose.Model<Task>
-    ){}
+    constructor(@InjectModel(Task.name) private taskModel: Model<Task>) {}
 
-    async findAll(query: Query): Promise<Task[]> {
-
-        const tasksPerPage = 2;
-        const currentPage = Number(query.page) || 1
-        const skipTasks = tasksPerPage * (currentPage - 1);
-
-
-        const tasks = await this.taskModel.find().limit(tasksPerPage).skip(skipTasks);
-        return tasks;
+    async findAll(): Promise<Task[]> {    
+        return this.taskModel.find();
     }
 
-    async findOne(id : string): Promise<Task> {
-        const isValid = mongoose.isValidObjectId(id)
-        if(!isValid) {
-            throw new BadRequestException(`Please Provide Correct ID`)
+    async findOne(id: string): Promise<Task> {
+        const isValid = mongoose.isValidObjectId(id);
+        if (!isValid) {
+            throw new BadRequestException(`Please Provide Correct ID`);
         }
         
         const task = await this.taskModel.findById(id);
-
         if (!task) {
             throw new NotFoundException(`Task with ID ${id} not found`);
-          }
-          return task;
+        }
+        return task;
     }
 
-    async create(task : Task): Promise<Task> {
-        return this.taskModel.create(task)
-    }
+    async create(dto: createTaskDto): Promise<Task> {
+        return this.taskModel.create(dto); // ✅ Fix: Use .create() instead of `new this.taskModel()`
+    }    
 
-    async update(id : string,newtask:Task): Promise<Task> {
-
-        const isValid = mongoose.isValidObjectId(id)
-        if(!isValid) {
-            throw new BadRequestException(`Please Provide Correct ID`)
+    async update(id: string, dto: updateTaskDto): Promise<Task> {
+        const isValid = mongoose.isValidObjectId(id);
+        if (!isValid) {
+            throw new BadRequestException(`Please Provide Correct ID`);
         }
 
-        const res = await this.taskModel.findByIdAndUpdate(id,newtask);
-        if (!res) {
+        const updatedTask = await this.taskModel.findByIdAndUpdate(id, dto, { new: true });
+        if (!updatedTask) {
             throw new NotFoundException(`Update Failed`);
-          }
-          return res;
+        }
+        return updatedTask;
     }
 
-    async delete(id : string): Promise<Task> {
-
-        const isValid = mongoose.isValidObjectId(id)
-        if(!isValid) {
-            throw new BadRequestException(`Please Provide Correct ID`)
+    async delete(id: string): Promise<Task> {
+        const isValid = mongoose.isValidObjectId(id);
+        if (!isValid) {
+            throw new BadRequestException(`Please Provide Correct ID`);
         }
 
-        const res = await this.taskModel.findByIdAndDelete(id);
-        if (!res) {
+        const deletedTask = await this.taskModel.findByIdAndDelete(id);
+        if (!deletedTask) {
             throw new NotFoundException(`Delete Failed`);
-          }
-          return res;
+        }
+        return deletedTask;
     }
-
 }

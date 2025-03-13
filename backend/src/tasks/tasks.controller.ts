@@ -16,8 +16,8 @@ export class TasksController {
     
 
     @Get()
-    findAll(@Query() query:ExpressQuery):Promise<Task[]>{
-        return this.tasksService.findAll(query);
+    findAll():Promise<Task[]>{
+        return this.tasksService.findAll();
     }
 
     @Get(':id')

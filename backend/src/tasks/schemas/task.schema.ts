@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
 
 export enum TaskStatus {
     PENDING = "pending",
@@ -6,22 +7,16 @@ export enum TaskStatus {
     COMPLETED = "completed",
 } 
 
-@Schema({
-    timestamps:true
-})
-export class Task{
-    @Prop({required : true})
-    title : string;
+@Schema({ timestamps: true })
+export class Task extends Document {  // ✅ Extend Document
+    @Prop({ required: true })
+    title: string;
 
-    @Prop({required : true})
-    description : string;
+    @Prop({ required: true })
+    description: string;
     
-    @Prop({
-        required : true,
-        enum : TaskStatus,
-        default : TaskStatus.PENDING
-    })
+    @Prop({ required: true, enum: TaskStatus, default: TaskStatus.PENDING })
     status: TaskStatus;
-
 }
-export const taskSchema = SchemaFactory.createForClass(Task)
+
+export const taskSchema = SchemaFactory.createForClass(Task);
